@@ -1,0 +1,546 @@
+/*
+references: 
+https://mathbits.com/MathBits/CompSci/LibraryFunc/rand.html
+https://cboard.cprogramming.com/c-programming/176380-why-function-getchar-skipped-does-not-run-above-program-c.html?fbclid=IwAR0AWh5kIa2y22drBM2Ys3FMMc8kM0TOJ2vskjL-FXShdrEoj0Q4q_sU8Q4
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+void displayMainMenu();
+void displayTimePeriod(int *nInitialYear);
+void displayPlayerStatus(int nPlayerNum,  int *nTotalCoins, int *nTotalHp, int *nFootmicecount,int *nRatknightscount, int *nRatkingcount);
+void displayRatChoices();
+void displayDamageCalculations(int nPlayer1Damage,int  nPlayer2Damage);
+void checkWinner(int nPlayer1Dmg, int nPlayer2Dmg, int *nTotalHp1, int *nTotalHp2,int *nTotalCoins1,int *nTotalCoins2, int *footmiceCount1, int *ratknightsCount1, int *ratkingCount1, int *footmiceCount2, int *ratknightsCount2, int *ratkingCount2);
+void battleResults( int *nTotalHP1,int *nTotalHP2, int *nTotalCoins1, int *nTotalCoins2,int *footmiceCount1, int *ratknightsCount1,int  *ratkingCount1,int *footmiceCount2, int *ratknightsCount2,int  *ratkingCount2,int footmiceprice, int ratknightprice, int ratkingprice);
+
+int enterGoldenAge(int *period, int *nCoins1, int *nCoins2, int *nTotalHp1, int *nTotalHp2, int *player1Status, int *player2Status);
+int initiateRatChoices(int nChoice, int *nTotalCoins,int nFootmiceprice, int *nTotalfootmice, int nRatknightsprice, int *nTotalRatknights, int RatkingPrice, int *nTotalRatking ); // serves as a substitute int main() function 2
+int checkBalance(int nTotalUserPrice,int **nTotalMoney,int nUserInput,int nMiceprice); // serves as a substitute int main() function 2
+int calculateDamage(int *nTotalfootmice, int *nTotalratknights, int *nTotalRatking, int nAtkFootmice, int nAtkratknights, int nAtkratking );
+int receiveCoins(int **nTotalfootmice, int **nTotalratknights, int **nTotalRatking);
+int randomizeCoins();
+
+int main(){
+	int nTurns;
+	int nPlayer1Num=1, nPlayer2Num=2;
+	int nP1Coins=10000, nP2Coins=3000;
+	int nCastle1Hp= 1300, nCastle2Hp=10;
+	int nStartYear=1290;
+	int nFootmicePrice,nRatKnightsPrice,nRatKingPrice;
+	int nFootmiceAtk=5, nRatKnightsAtk=35, nRatKingAtk=300;
+	int nFootmicecount1, nRatknightscount1, nRatkingcount1;
+	int nFootmicecount2, nRatknightscount2, nRatkingcount2;
+	int nTotalP1dmg, nTotalP2dmg;
+	int goldenStatus1, goldenStatus2;
+	int score1, score2;
+	int nMenuChoice, nEnlistChoice;
+	
+	displayMainMenu();
+    printf("\n Menu Choice: ");
+  	scanf("%d", &nMenuChoice);
+  	
+  	switch (nMenuChoice){
+  		case 1:
+  		while (nStartYear<1390 && (nCastle1Hp!=0&&nCastle2Hp!=0)) //The loop will stop if the time period is close to 1400
+		  {
+		    displayTimePeriod(&nStartYear);
+		    // The following variables have to be set on 0 before playing the game as it resets the pointers back to 0 and to avoid loop
+		    nTurns = 0;
+		    nFootmicecount1=0, nRatknightscount1=0, nRatkingcount1=0;
+	        nFootmicecount2=0, nRatknightscount2=0, nRatkingcount2=0;
+	        goldenStatus1=0, goldenStatus2=0;
+	        enterGoldenAge(&nStartYear, &nP1Coins, &nP2Coins, &nCastle1Hp, &nCastle2Hp, &goldenStatus1, &goldenStatus2);
+		    
+			do{
+	            nFootmicePrice=100,nRatKnightsPrice=500,nRatKingPrice=5000;
+				if (nTurns==0)
+				{
+					printf("\n================ Kingdom Rodentopolis ================\n");
+			
+					displayPlayerStatus(nPlayer1Num, &nP1Coins, &nCastle1Hp, &nFootmicecount1,&nRatknightscount1, &nRatkingcount1);
+					if (goldenStatus1 != 0){
+					    nFootmicePrice *= 0.8;
+					    nRatKnightsPrice *= 0.8;
+					    nRatKingPrice *= 0.8;
+					}
+					displayRatChoices(nFootmicePrice, nRatKnightsPrice, nRatKingPrice);
+					printf("\n Rat Choice: ");
+  					scanf("%d", &nEnlistChoice);
+  					initiateRatChoices(nEnlistChoice, &nP1Coins, nFootmicePrice, &nFootmicecount1, nRatKnightsPrice, &nRatknightscount1, nRatKingPrice, &nRatkingcount1);
+  				}
+					
+				else if (nTurns==1)
+				{
+					printf("\n================ Kingdom Squeaktopia ================\n");
+			
+					displayPlayerStatus(nPlayer2Num, &nP2Coins, &nCastle2Hp, &nFootmicecount2,&nRatknightscount2,&nRatkingcount2);
+					if (goldenStatus2 != 0){
+					    nFootmicePrice *= 0.8;
+					    nRatKnightsPrice *= 0.8;
+					    nRatKingPrice *= 0.8;
+					}
+					displayRatChoices(nFootmicePrice, nRatKnightsPrice, nRatKingPrice);
+					printf("\n Rat Choice: ");
+  					scanf("%d", &nEnlistChoice);
+  					initiateRatChoices(nEnlistChoice, &nP2Coins, nFootmicePrice, &nFootmicecount2, nRatKnightsPrice, &nRatknightscount2, nRatKingPrice, &nRatkingcount2);
+				}
+					
+				else if (nTurns==2)
+				{
+					nTotalP1dmg=calculateDamage( &nFootmicecount1, &nRatknightscount1, &nRatkingcount1,nFootmiceAtk, nRatKnightsAtk, nRatKingAtk );	
+					nTotalP2dmg=calculateDamage( &nFootmicecount2, &nRatknightscount2, &nRatkingcount2,nFootmiceAtk, nRatKnightsAtk, nRatKingAtk );
+					displayDamageCalculations(nTotalP1dmg,nTotalP2dmg);
+					checkWinner(nTotalP1dmg, nTotalP2dmg,&nCastle1Hp,&nCastle2Hp,&nP1Coins,&nP2Coins,&nFootmicecount1, &nRatknightscount1, &nRatkingcount1,&nFootmicecount2, &nRatknightscount2, &nRatkingcount2);
+					battleResults(&nCastle1Hp,&nCastle2Hp,&nP1Coins,&nP2Coins,&nFootmicecount1,&nRatknightscount1,&nRatkingcount1,&nFootmicecount2, &nRatknightscount2,&nRatkingcount2,nFootmicePrice,nRatKnightsPrice,nRatKingPrice);
+				}
+				if(nEnlistChoice==4){
+					nTurns++;
+				}
+			
+			} while(nTurns<3 || (&nCastle1Hp>&nCastle2Hp && &nCastle1Hp<&nCastle2Hp) ); // A new decade will start if one of the players has less HP of if nTurns is not equal to 3
+			printf("\n Year %d has passed. Press Enter to continue onto the next decade! \n", nStartYear);
+			if (nStartYear == 1390){
+			    if (nCastle1Hp != 0 || nCastle2Hp != 0){
+				    score1= nCastle1Hp + (0.33*nP1Coins);
+				    score2= nCastle2Hp + (0.33*nP2Coins);
+				    if (score1>score2){
+					    printf("\n\n~*~*~*~*~*~*Congratulations Player 1: Rodentopolis*~*~*~*~*~*~ \n");
+				    }
+				    else{
+					    printf("\n\n~*~*~*~*~*~*Congratulations Player 2: Squeaktopia*~*~*~*~*~*~ \n");
+				    }
+			    }
+			    else if (nStartYear == 1400 || nCastle2Hp == 0){
+			        printf("\n\n~*~*~*~*~*~*Congratulations Player 1: Rodentopolis*~*~*~*~*~*~ \n");
+			    }
+			    else if (nStartYear == 1400 || nCastle1Hp == 0){
+			        printf("\n\n~*~*~*~*~*~*Congratulations Player 2: Squeaktopia*~*~*~*~*~*~ \n");
+			    }
+			}
+			getchar(); //enter 1 from the user input 
+			getchar(); //enter 2 for \n
+			
+		}
+  		break;
+  		case 2:
+  		break;
+  		default:
+  		while (nMenuChoice <1 || nMenuChoice >3)
+	  	{
+ 			printf("Wrong input! Please try again!");
+ 			printf("\n Rat Choice: \n");
+ 			scanf("%d", &nMenuChoice);
+	  	}
+	}
+	return 0;
+}
+
+/*
+Description: Displays the main menu
+Parameters:
+n/a
+Return value: n/a
+*/
+void displayMainMenu(){
+	printf("------------------------------------------------- \n");
+	printf("\n Welcome to Battle Rats: \n ");
+	printf("\n [1.] Play Game  \n");
+	printf("\n [2.] Exit \n");
+	printf("------------------------------------------------- \n");
+}
+
+
+/*
+Description: Displays the time period in every turn
+Parameters:
+*nInitialYear Serves as a parameter for nStartYear to accumulate +10 to indicate every decade/round
+Return value: n/a
+*/
+void displayTimePeriod(int *nInitialYear){
+	*nInitialYear+=10;
+	printf("\n|---\tTime Period: %d\t---|\n",*nInitialYear);
+}
+
+/*
+Description: Displays the player status in every turn
+Parameters:
+nPlayerNum Serves as a parameter for nStartYear to accumulate +10 to indicate every decade/round
+*nTotalCoins The total coins a player have
+*nTotalHp	 The total castle HP a player has 
+*nFootmicecount	Total footmice accumulated in the player choices
+*nRatknightscount	Total rat knights accumulated in the player choices
+*nRatkingcount	Total rat king accumulated in the player choices	
+Return value: n/a
+*/
+void displayPlayerStatus(int nPlayerNum, int *nTotalCoins, int *nTotalHp, int *nFootmicecount,int *nRatknightscount, int *nRatkingcount){
+
+ 	printf("\n It's Player %d's turn! \n", nPlayerNum );
+  	printf("\n Coins: %d G \n", *nTotalCoins);
+  	printf("\n Castle HP: %d \n", *nTotalHp);	
+  	printf("\n Number of Footmice: %d \n", *nFootmicecount);
+  	printf("\n Number of Rat Knights: %d \n ", *nRatknightscount);
+  	printf("\n Number of Rat King: %d \n", *nRatkingcount);
+
+}
+
+/*
+Description: The function displays the specific troops to be chosen
+Parameters:
+footMicePrice	The price of Footmice
+ratKnightPrice	The price of Rat Knights
+ratKingPrice	The price of Rat King
+Return value: n/a
+*/
+void displayRatChoices(int footMicePrice, int ratKnightPrice, int ratKingPrice){	
+	printf("------------------------------------------------------------------------------------\n");
+	printf("\n Enlist a Rat: \n ");
+	printf("\n [1.] Enlist Foot Mice        (Cost: %d, Atk: 5, Reward for Opponent: 110) \n", footMicePrice);
+	printf("\n [2.] Enlist Rat Knight(s)    (Cost: %d, Atk: 35, Reward for Opponent: 650) \n", ratKnightPrice);
+	printf("\n [3.] Enlist Rat King         (Cost: %d, Atk: 300, Reward for Opponent: 5500) \n", ratKingPrice);
+	printf("\n [4.] Rally Army              (End Turn) \n");
+	printf("------------------------------------------------------------------------------------\n");
+	
+}
+
+/*
+Description: The function checks the coins of the player before they enlist a specified unit
+Parameters:
+n/a
+Return value: n/a
+*/
+
+void insuffucientCoins(){
+    printf("\n Insufficient balance to make a transaction!\n");
+}
+
+/*
+Description: The function checks the damage of the player 
+Parameters:
+nPlayer1Damage Total damage of the player 1
+nPlayer2Damage	Total damage of player 2
+Return value: n/a
+*/
+void displayDamageCalculations(int nPlayer1Damage,int nPlayer2Damage)
+{
+	printf("\n------------------------------------------------- \n");
+	printf("\n Rodentopolis Damage: %d\n", nPlayer1Damage);
+	printf("\n Squeaktopia Damage: %d\n", nPlayer2Damage);
+	printf("------------------------------------------------- \n\n");
+	
+}
+
+/*
+Description: The function checks the Winner or the one who has more damage then attacking the opponent
+Parameters:
+nPlayer1Dmg Total damage of the player 1
+nPlayer2Dmg	Total damage of player 2
+*nTotalHp1 Total Castle Hp of player 1
+*nTotalHp2	Total Castle Hp of player 2
+*nTotalCoins1	Total coins of player 1
+*nTotalCoins2	Total coins of player 2
+*footmiceCount1	Total footmice accumulated in the player choices
+*ratknightsCount1	Total rat knights accumulated in the player choices
+*ratkingCount1	Total rat king accumulated in the player choices
+*footmiceCount2	Total footmice accumulated in the player choices
+*ratknightsCount2	Total rat knights accumulated in the player choices
+*ratkingCount2	Total rat king accumulated in the player choices
+Return value: n/a
+*/
+void checkWinner(int nPlayer1Dmg, int nPlayer2Dmg, int *nTotalHp1, int *nTotalHp2,int *nTotalCoins1,int *nTotalCoins2, int *footmiceCount1, int *ratknightsCount1, int *ratkingCount1, int *footmiceCount2, int *ratknightsCount2, int *ratkingCount2){
+	int castleDamage, bountyReward;
+	if (nPlayer1Dmg>nPlayer2Dmg){
+		castleDamage=nPlayer1Dmg-nPlayer2Dmg;
+		*nTotalHp2-=castleDamage;	
+		bountyReward = receiveCoins(&footmiceCount2, &ratknightsCount2, &ratkingCount2);
+		printf("\n Rodentopolis Wins!\n");
+		printf("\n Rodentopolis takes the lead, dealing %d damage to Squeaktopia!\n", castleDamage);
+		printf("\n Squeaktopia currently has %d HP left.\n", *nTotalHp2);
+		printf("\n Successfully purged %d Foot Mice, %d Rat Knight(s) and %d Rat King.\n", *footmiceCount2, *ratknightsCount2, *ratkingCount2);
+		printf("\n Rodentopolis received %d coins from as a bounty reward.\n", bountyReward);
+		*nTotalCoins1+=bountyReward;
+		printf("\n Rodentropolis has a total of %d coins.\n",*nTotalCoins1);
+	}
+	else if (nPlayer1Dmg<nPlayer2Dmg){
+		castleDamage=nPlayer2Dmg-nPlayer1Dmg;
+		*nTotalHp1-=castleDamage;
+		bountyReward = receiveCoins(&footmiceCount1, &ratknightsCount1, &ratkingCount1);
+		printf("\n Squeaktopia Wins!\n");
+		printf("\n Squeaktopia takes the lead, dealing %d damage to Rodentopolis!\n", castleDamage);
+		printf("\n Rodentopolis currently has %d HP left.\n", *nTotalHp1);
+		printf("\n Successfully purged %d Foot Mice, %d Rat Knight(s) and %d Rat King.\n",*footmiceCount1, *ratknightsCount1, *ratkingCount1);
+	    printf("\n Squeaktopia received %d coins from as a bounty reward.\n", bountyReward);
+	    *nTotalCoins2+=bountyReward;
+		printf("\n Squeaktopia has a total of %d coins.\n",*nTotalCoins2);
+	}
+	else{
+	    printf(" Nothing happened. No damage was taken by either sides. Moving on...\n");
+	}
+}
+
+/*
+Description: The function shows  the battle summary after a round/ decade
+Parameters:
+
+*nTotalHp1 Total Castle Hp of player 1
+*nTotalHp2	Total Castle Hp of player 2
+*nTotalCoins1	Total coins of player 1
+*nTotalCoins2	Total coins of player 2
+*footmiceCount1	Total footmice accumulated in the player choices
+*ratknightsCount1	Total rat knights accumulated in the player choices
+*ratkingCount1	Total rat king accumulated in the player choices
+*footmiceCount2	Total footmice accumulated in the player choices
+*ratknightsCount2	Total rat knights accumulated in the player choices
+*ratkingCount2	Total rat king accumulated in the player choices
+footmiceprice The price of footmices
+ratknightprice The price of rat knights
+ratkingprice The price of rat king
+Return value: n/a
+*/
+void battleResults( int *nTotalHP1,int *nTotalHP2, int *nTotalCoins1, int *nTotalCoins2,int *footmiceCount1, int *ratknightsCount1,int  *ratkingCount1,int *footmiceCount2, int *ratknightsCount2,int  *ratkingCount2,int footmiceprice, int ratknightprice, int ratkingprice ){
+	int totalfootmice1,totalratknights1, totalratking1, totalExpenses1;
+	int totalfootmice2,totalratknights2, totalratking2, totalExpenses2;
+	printf("\n------------------------------------------------- ");
+	printf("\n Battle Summary: \n");
+	printf("\n Player 1: Rodentopolis \n");
+	printf("\n Total Castle HP : %d \n",*nTotalHP1);
+	printf("\n Total Coins: %d \n", *nTotalCoins1);
+	
+	totalfootmice1=*footmiceCount1* footmiceprice;
+	totalratknights1=*ratknightsCount1*ratknightprice;
+	totalratking1=*ratkingCount1* ratkingprice;
+	
+	totalExpenses1=totalfootmice1+totalratknights1+ totalratking1;
+	printf("\n Total Expenses: %d \n", totalExpenses1);
+	
+	printf("================================================= ");
+	printf("\n Player 2: Squeaktopia \n");
+	printf("\n Total Castle HP : %d \n",*nTotalHP2);
+	printf("\n Total Coins: %d \n", *nTotalCoins2);
+    
+	totalfootmice2=*footmiceCount2* footmiceprice;
+	totalratknights2=*ratknightsCount2*ratknightprice;
+	totalratking2=*ratkingCount2* ratkingprice;
+	
+	totalExpenses2=totalfootmice2+totalratknights2+ totalratking2;
+	printf("\n Total Expenses: %d \n", totalExpenses2);
+	printf("------------------------------------------------- \n");
+		
+}
+
+/*
+Description: The function initiate the choices in order the player to enlist rats during a round
+Parameters:
+nChoice	player's rat choice 
+*nTotalCoins player's total Coins	
+nFootmiceprice	price of footmice
+*nTotalfootmice	player's total Footmice
+nRatknightsprice  price of rat knights
+*nTotalRatknights player's total Ratknights	
+RatkingPrice	player's total rat king
+*nTotalRatking	player's total Ratking
+Return value: nChoice,*nTotalCoins, *nTotalfootmice, *nTotalRatknights, *nTotalRatking
+*/
+
+int initiateRatChoices(int nChoice, int *nTotalCoins,int nFootmiceprice, int *nTotalfootmice, int nRatknightsprice, int *nTotalRatknights, int RatkingPrice, int *nTotalRatking)
+{	
+	int nUserInputFM,nUserInputRK;
+	int nTotalUserInputFMprice = 0, nTotalUserInputRKprice=0;
+	
+	while (nChoice != 4){
+	    while (nChoice < 1 || nChoice > 4){
+ 	        printf("\n Rat Choice: ");
+ 	        scanf("%d", &nChoice);
+ 	        if (nChoice < 1 || nChoice > 4){
+ 	            printf("Wrong input! Please try again!");
+ 	        }
+	    }
+	    switch(nChoice){
+            case 1: //choice: footmice
+                if (*nTotalCoins < nFootmiceprice){ //to check if the specified mice is affordable  
+                    insuffucientCoins();
+                    nChoice = 0; // nChoice is set to 0 in order to avoid the loop from int main()
+                    break;
+                }
+                else{
+                    do{
+                        printf("\n Please enter the specified amount of Foot Mice: ");
+        	            scanf("%d",&nUserInputFM);
+        	            nTotalUserInputFMprice  = nUserInputFM*nFootmiceprice;
+                        if (nTotalUserInputFMprice > *nTotalCoins){
+                            insuffucientCoins();
+                        }
+                    } while(nTotalUserInputFMprice > *nTotalCoins);
+                    *nTotalfootmice += nUserInputFM;
+        	        *nTotalCoins -= nTotalUserInputFMprice;
+        	        return *nTotalCoins;
+				    return *nTotalfootmice;
+				    return nChoice;
+                }
+                break;
+    
+            case 2:// choice rat knights
+
+     			if (*nTotalCoins < nRatknightsprice){ //to check if the specified mice is affordable  
+                    insuffucientCoins();
+                    nChoice = 0; // nChoice is set to 0 in order to avoid the loop
+                    break;
+                }
+                else{
+                    do{
+                        printf("\n Please enter the specified amount of Rat Knights: ");
+        	            scanf("%d",&nUserInputRK);
+        	            nTotalUserInputRKprice  = nUserInputRK*nRatknightsprice;
+                        if (nTotalUserInputRKprice > *nTotalCoins){
+                            insuffucientCoins();
+                        }
+                    } while(nTotalUserInputRKprice > *nTotalCoins);
+                    *nTotalCoins-=nTotalUserInputRKprice;
+                    *nTotalRatknights+=nUserInputRK;
+                    return *nTotalCoins;
+				    return *nTotalRatknights;
+				    return nChoice;
+                }
+                break;
+                
+            case 3://choice: ratking
+                if (*nTotalCoins < RatkingPrice){ //to check if the specified mice is affordable  
+                    insuffucientCoins();
+                    nChoice = 0; // nChoice is set to 0 in order to avoid the loop
+                    break;
+                }
+                else{
+                	*nTotalCoins -= RatkingPrice;
+                	*nTotalRatking += 1;
+	                return *nTotalCoins;
+				    return *nTotalRatking;
+	                return nChoice;
+				}
+                break;
+    
+            case 4:
+                break;
+	    }
+	}
+	return nChoice;
+}
+
+/*
+Description: The function calculates the player's damage
+Parameters:
+nChoice	player's rat choice 
+nAtkFootmice	footmice attack
+*nTotalfootmice	player's total Footmice
+nAtkratknights	ratknights attack
+*nTotalRatknights player's total Ratknights	
+nAtkratking		ratking attack
+*nTotalRatking	player's total Ratking
+Return value: nTotalDamage
+*/
+int calculateDamage(int *nTotalfootmice, int *nTotalratknights, int *nTotalRatking, int nAtkFootmice, int nAtkratknights, int nAtkratking ){
+	int nTotalfootmicedamage;
+	int nTotalratknightsdamage;
+	int nTotalratkingdamage;
+	int nTotalDamage;
+	
+	
+	nTotalfootmicedamage=*nTotalfootmice* nAtkFootmice;
+	nTotalratknightsdamage=*nTotalratknights* nAtkratknights;
+	nTotalratkingdamage=*nTotalRatking* nAtkratking ;
+	
+	nTotalDamage= nTotalfootmicedamage+nTotalratknightsdamage+nTotalratkingdamage;
+	return nTotalDamage;
+}
+
+/*
+Description: The player recieves total coins based on the what the opponent uses for battle
+Parameters:
+**nTotalfootmice Total footmice that is accumulated by the player after battle
+*nTotalratknights	Total rat knights that is accumulated by the player after battle
+**nTotalRatking	Total rat king that is accumulated by the player after battle
+Return value: total of resultFootmice,resultRatknights,resultRatking
+*/
+
+int receiveCoins(int **nTotalfootmice, int **nTotalratknights, int **nTotalRatking)
+{
+	int nFootMiceReward=110, nRatKnightReward=650, nRatKingReward=5500;
+	int resultFootmice,resultRatknights,resultRatking;	
+	resultFootmice = **nTotalfootmice* nFootMiceReward;
+	resultRatknights = **nTotalratknights*nRatKnightReward;
+	resultRatking = **nTotalRatking*nRatKingReward;
+	
+	return resultFootmice+resultRatknights+resultRatking;
+
+}
+/*
+Description: The function randomize coins to be recieves in the Golden Age
+Parameters:
+n/a
+Return value: result
+*/
+
+int randomizeCoins()
+{
+	int result = 0, min=1500, max=3000;
+	time_t t;
+    srand (time (&t));
+	while (result<min){
+		result=rand()%max;
+	}
+	return result;
+	
+}
+
+/*
+Description: The function Checks and enters to the Golden Age calculates each players score in order to find the suffering player and instatly give random amount of coins
+Parameters:
+
+*nCoins1	Total coins of player 1	
+*nCoins2	Total coins of player 2
+*nTotalHp1 Total Castle Hp of player 1
+*nTotalHp2	Total Castle Hp of player 2
+*player1Status	Total footmice accumulated in the player choices
+*player2Status	Total rat knights accumulated in the player choices
+
+Return value: *nCoins1,*nCoins2,*player1Status,*player2Status
+*/
+int enterGoldenAge(int *period, int *nCoins1, int *nCoins2, int *nTotalHp1, int *nTotalHp2, int *player1Status, int *player2Status)
+{
+	int Pscore1, Pscore2, added;
+	if (*period==1340|| *period== 1380){
+		printf("\n ~*~*~*~*~*~*~*~*~*~*~ Welcome to the Golden Age! ~*~*~*~*~*~*~*~*~*~*~\n");
+		printf("\n The suffering player will get bonus coins! Yay! \n");
+		getchar();
+		Pscore1= *nTotalHp1+(0.33**nCoins1);
+		Pscore2= *nTotalHp2+(0.33**nCoins2);
+			if (Pscore1<Pscore2){
+			    added = randomizeCoins();
+			    printf(" Player 1 receives the Golden Blessing!\n");
+			    printf(" Current Money: %d\n", *nCoins1);
+			    printf(" Added Value: %d", added);
+			    getchar();
+			    getchar();
+			    *nCoins1 += added;
+			    *player1Status += 1;
+			    return *player1Status;
+				return *nCoins1;
+			}
+			else if (Pscore1>Pscore2){
+			    added = randomizeCoins();
+			    printf(" Player 2 receives the Golden Blessing!");
+			    printf(" Current Money: %d\n", *nCoins2);
+			    printf(" Added Value: %d\n\n", added);
+			    getchar();
+			    getchar();
+			    *nCoins2 += added;
+			    *player2Status += 1;
+			    return *player2Status;
+				return *nCoins2;
+			}
+
+		}
+	return 1;
+			
+}
